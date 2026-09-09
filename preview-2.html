@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VITALIS AI — Clinical Analysis</title>
+<style>
+:root{
+ --bg:#02080d;--panel:#06131c;--panel2:#081923;--border:#154457;
+ --text:#e8f7ff;--muted:#7895a5;--green:#35f28b;--cyan:#19caff;
+ --yellow:#ffe05a;--pink:#ff55bb;--red:#ff415b;--purple:#aa8cff;
+}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -15%,#123244,#02080d 55%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+.app{max-width:1800px;margin:auto;padding:10px}.top{height:70px;border:1px solid var(--border);border-radius:10px;background:#06131ce8;display:flex;align-items:center;padding:8px 14px;gap:16px}
+.logo{font-weight:900;font-size:25px;letter-spacing:2px}.logo small{display:block;font-size:9px;letter-spacing:1px;color:var(--muted);margin-top:3px}
+.ai{font-size:28px;color:var(--purple);text-shadow:0 0 15px #aa8cff66}.patient{flex:1;display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:14px;font-size:12px}.patient b{color:#fff}.live{color:var(--green);font-size:17px;font-weight:800}.live i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);margin-right:6px}
+.controls{display:flex;gap:6px}.btn{background:#091d29;border:1px solid #245267;color:#a9c6d2;border-radius:6px;padding:9px 12px;font-size:11px}.btn.active{border-color:var(--purple);color:white;box-shadow:0 0 12px #aa8cff44}
+.title{display:flex;justify-content:space-between;align-items:end;margin:12px 2px}.title h1{margin:0;font-size:21px}.title p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.layout{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:8px}.panel{background:linear-gradient(145deg,#071620,#030b11);border:1px solid var(--border);border-radius:9px;padding:13px;box-shadow:0 10px 30px #0008}.wide{grid-column:1/4}.span2{grid-column:span 2}
+h2{font-size:12px;letter-spacing:1px;color:#8eafbd;margin:0 0 12px;text-transform:uppercase}.status{display:flex;gap:16px;align-items:center}.status .circle{width:58px;height:58px;border-radius:50%;border:2px solid var(--green);display:grid;place-items:center;color:var(--green);font-weight:900;font-size:10px;box-shadow:0 0 22px #35f28b33}.risk{font-size:39px;font-weight:900}.risklabel{font-size:11px;color:var(--muted)}
+.meter{height:8px;background:#10252f;border-radius:10px;overflow:hidden;margin:12px 0}.meter i{display:block;height:100%;width:18%;background:var(--green);border-radius:10px;transition:.4s}.risktext{font-size:12px;color:#a9c1ca}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #102731;font-size:12px}.row:last-child{border-bottom:0}.row b{color:#fff}.ok{color:var(--green)!important}.warn{color:var(--yellow)!important}.bad{color:var(--red)!important}
+.feature{margin:9px 0}.featurehead{display:flex;justify-content:space-between;font-size:11px}.featurebar{height:6px;background:#10252f;border-radius:8px;margin-top:5px;overflow:hidden}.featurebar i{display:block;height:100%;background:var(--purple);border-radius:8px}
+.wave{height:150px;width:100%;display:block;background:#02090e;border-radius:5px}.wavehead{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px}.green{color:var(--green)}.cyan{color:var(--cyan)}.pink{color:var(--pink)}.yellow{color:var(--yellow)}.red{color:var(--red)}.purple{color:var(--purple)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.finding{border-left:3px solid var(--green);background:#071821;padding:10px;border-radius:5px;margin-bottom:7px}.finding.warn{border-left-color:var(--yellow)}.finding.danger{border-left-color:var(--red)}.finding strong{display:block;font-size:12px}.finding span{font-size:10px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:11px}th,td{text-align:left;padding:7px;border-bottom:1px solid #102731}th{color:#6f8c9b;font-weight:600}td b{font-weight:700}.confidence{font-size:10px;color:var(--muted)}
+.timeline{height:80px;position:relative;border-left:1px solid #183340;border-bottom:1px solid #183340;background:repeating-linear-gradient(90deg,transparent 0 49px,#0d2632 50px),repeating-linear-gradient(0deg,transparent 0 19px,#0d2632 20px)}.point{position:absolute;bottom:20px;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}.line{position:absolute;left:0;right:0;top:50%;border-top:1px dashed #2a5262}
+.controls2{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid #20495b;border-radius:20px;padding:6px 9px;color:#9db9c5;font-size:10px;background:#071822}.chip.active{border-color:var(--purple);color:white}
+.footer{text-align:center;color:#506e7b;font-size:9px;padding:10px}.notice{color:#718b98;font-size:9px}
+@media(max-width:1100px){.layout{grid-template-columns:1fr 1fr}.wide{grid-column:1/3}.span2{grid-column:span 2}}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.wide,.span2{grid-column:auto}.patient{grid-template-columns:1fr 1fr}.top{height:auto;flex-wrap:wrap}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="ai">◈</div><div class="logo">VirtuAI<small>AI CLINICAL ANALYSIS ENGINE</small></div>
+  <div class="patient">
+    <div>Patient: <b>Demo Patient</b><br>ID: <b>DP-001</b></div>
+    <div>Age: <b>32</b><br>Sex: <b>Male</b></div>
+    <div class="live"><i></i>AI ONLINE<br><span style="font-size:9px;color:#708b99">MODEL v0.1 DEMO</span></div>
+    <div id="clock"></div>
+  </div>
+  <div class="controls"><button class="btn active">LIVE</button><button class="btn">History</button><button class="btn">Models</button></div>
+</header>
+
+<div class="title">
+ <div><h1>AI Physiological Analysis</h1><p>Multivariate time-series analysis • ECG morphology • anomaly detection • risk estimation</p></div>
+ <div class="notice">Synthetic patient · Educational simulation</div>
+</div>
+
+<div class="layout">
+ <div class="panel">
+   <h2>Overall AI Assessment</h2>
+   <div class="status"><div class="circle" id="state">STABLE</div><div><div class="risk" id="risk">18%</div><div class="risklabel">COMPOSITE RISK SCORE</div></div></div>
+   <div class="meter"><i id="riskbar"></i></div>
+   <div class="risktext" id="summary">No significant abnormal physiological pattern detected.</div>
+   <div style="margin-top:13px" class="row"><span>Model confidence</span><b class="ok" id="confidence">94%</b></div>
+   <div class="row"><span>Anomaly score</span><b id="anom">0.08</b></div>
+   <div class="row"><span>Data quality</span><b class="ok">GOOD</b></div>
+   <div class="row"><span>Analysis window</span><b>10 min</b></div>
+ </div>
+
+ <div class="panel">
+   <h2>Risk by Domain</h2>
+   <div class="feature"><div class="featurehead"><span>Cardiovascular</span><b id="cardRisk">12%</b></div><div class="featurebar"><i id="cardBar" style="width:12%;background:#35f28b"></i></div></div>
+   <div class="feature"><div class="featurehead"><span>Respiratory</span><b id="respRisk">16%</b></div><div class="featurebar"><i id="respBar" style="width:16%;background:#19caff"></i></div></div>
+   <div class="feature"><div class="featurehead"><span>Oxygenation</span><b id="oxyRisk">8%</b></div><div class="featurebar"><i id="oxyBar" style="width:8%;background:#19caff"></i></div></div>
+   <div class="feature"><div class="featurehead"><span>Metabolic</span><b id="metRisk">10%</b></div><div class="featurebar"><i id="metBar" style="width:10%;background:#ffe05a"></i></div></div>
+   <div class="feature"><div class="featurehead"><span>Neurological*</span><b>—</b></div><div class="featurebar"><i style="width:0;background:#aa8cff"></i></div></div>
+   <div class="notice" style="margin-top:9px">* No direct neurological sensor data available.</div>
+ </div>
+
+ <div class="panel">
+   <h2>AI Detected Patterns</h2>
+   <div class="finding"><strong id="finding1">Stable sinus rhythm</strong><span id="find1sub">ECG morphology consistent with simulated baseline.</span></div>
+   <div class="finding"><strong>Stable oxygenation</strong><span>SpO₂ remains within simulated baseline range.</span></div>
+   <div class="finding"><strong>Normal respiratory pattern</strong><span>No significant respiratory trend detected.</span></div>
+   <div class="finding"><strong>Hemodynamics stable</strong><span>Blood pressure and cardiac output show low variability.</span></div>
+ </div>
+
+ <div class="panel span2">
+   <div class="wavehead"><span class="green">ECG II · AI SIGNAL ANALYSIS</span><span id="ecgstate" class="ok">SINUS RHYTHM · NO MORPHOLOGICAL ALERT</span></div>
+   <canvas id="ecg" class="wave"></canvas>
+ </div>
+
+ <div class="panel">
+   <h2>ECG Interpretation</h2>
+   <div class="row"><span>Rhythm</span><b class="ok">Sinus rhythm</b></div>
+   <div class="row"><span>Rate</span><b id="ehr">62 BPM</b></div>
+   <div class="row"><span>PR interval</span><b id="epr">158 ms</b></div>
+   <div class="row"><span>QRS duration</span><b id="eqrs">88 ms</b></div>
+   <div class="row"><span>QTc</span><b id="eqtc">400 ms</b></div>
+   <div class="row"><span>Morphology</span><b class="ok">Baseline</b></div>
+ </div>
+
+ <div class="panel wide">
+   <h2>Why did the AI produce this result? · Feature Importance</h2>
+   <div class="grid2">
+    <div>
+      <div class="feature"><div class="featurehead"><span>Heart-rate trend</span><b>24%</b></div><div class="featurebar"><i style="width:24%"></i></div></div>
+      <div class="feature"><div class="featurehead"><span>Respiratory trend</span><b>19%</b></div><div class="featurebar"><i style="width:19%"></i></div></div>
+      <div class="feature"><div class="featurehead"><span>SpO₂</span><b>15%</b></div><div class="featurebar"><i style="width:15%"></i></div></div>
+    </div>
+    <div>
+      <div class="feature"><div class="featurehead"><span>Blood pressure</span><b>13%</b></div><div class="featurebar"><i style="width:13%"></i></div></div>
+      <div class="feature"><div class="featurehead"><span>ECG morphology</span><b>11%</b></div><div class="featurebar"><i style="width:11%"></i></div></div>
+      <div class="feature"><div class="featurehead"><span>Temperature / other</span><b>18%</b></div><div class="featurebar"><i style="width:18%"></i></div></div>
+    </div>
+   </div>
+ </div>
+
+ <div class="panel">
+   <h2>Live Physiological Context</h2>
+   <div class="row"><span>HR</span><b class="green" id="lhr">62</b></div>
+   <div class="row"><span>SpO₂</span><b class="cyan" id="lspo">98%</b></div>
+   <div class="row"><span>RR</span><b class="yellow" id="lrr">14/min</b></div>
+   <div class="row"><span>NIBP</span><b class="red" id="lbp">118/76</b></div>
+   <div class="row"><span>EtCO₂</span><b class="pink" id="lco2">36 mmHg</b></div>
+   <div class="row"><span>Temp</span><b id="lt">36.7 °C</b></div>
+ </div>
+
+ <div class="panel span2">
+   <h2>Multivariate Timeline · Last 10 Minutes</h2>
+   <div class="timeline" id="timeline"><div class="line"></div></div>
+   <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:#607b88"><span>-10 min</span><span>-5 min</span><span>NOW</span></div>
+ </div>
+
+ <div class="panel">
+   <h2>AI Findings</h2>
+   <div class="row"><span>Trend detection</span><b class="ok">STABLE</b></div>
+   <div class="row"><span>Change-point</span><b>NONE</b></div>
+   <div class="row"><span>Outlier detection</span><b class="ok">NORMAL</b></div>
+   <div class="row"><span>Cross-parameter correlation</span><b class="ok">NORMAL</b></div>
+ </div>
+
+ <div class="panel wide">
+   <h2>Simulation Controls</h2>
+   <div class="controls2">
+    <button class="chip active" id="normal">Healthy baseline</button>
+    <button class="chip" id="tachy">Simulate HR rise</button>
+    <button class="chip" id="desat">Simulate SpO₂ decline</button>
+    <button class="chip" id="resp">Simulate RR rise</button>
+    <button class="chip" id="multi">Simulate multivariate change</button>
+   </div>
+   <div class="notice" style="margin-top:9px">These controls intentionally generate synthetic abnormalities so the AI visualization can be demonstrated. They do not represent clinical diagnoses.</div>
+ </div>
+</div>
+<div class="footer">VITALIS AI DEMO · SYNTHETIC DATA ONLY · NOT A MEDICAL DEVICE · NOT FOR CLINICAL DECISION MAKING</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);let mode='normal',t=0,phase=0;
+const modes=['normal','tachy','desat','resp','multi'];
+function setMode(m){mode=m;modes.forEach(x=>$(x).classList.toggle('active',x===m));}
+modes.forEach(m=>$(m).addEventListener('click',()=>setMode(m)));
+
+function vals(){
+ let hr=62+1.5*Math.sin(t/5),spo=98+.12*Math.sin(t/6),rr=14+.25*Math.sin(t/7),bp=118+2*Math.sin(t/8),et=36+.5*Math.sin(t/7),temp=36.7;
+ if(mode==='tachy'){hr=82+5*Math.sin(t/5);bp=128+3*Math.sin(t/7)}
+ if(mode==='desat'){spo=94+0.8*Math.sin(t/5);rr=16+.5*Math.sin(t/6)}
+ if(mode==='resp'){rr=25+2*Math.sin(t/5);hr=78+3*Math.sin(t/6)}
+ if(mode==='multi'){hr=86+4*Math.sin(t/5);spo=95+.7*Math.sin(t/6);rr=22+2*Math.sin(t/5);bp=132+4*Math.sin(t/7);et=41+1.2*Math.sin(t/5);temp=37.2}
+ return {hr,spo,rr,bp,et,temp};
+}
+function update(){
+ t++;let v=vals();
+ $('lhr').textContent=v.hr.toFixed(0);$('ehr').textContent=v.hr.toFixed(0)+' BPM';$('lspo').textContent=v.spo.toFixed(0)+'%';$('lrr').textContent=v.rr.toFixed(0)+'/min';$('lbp').textContent=v.bp.toFixed(0)+'/76';$('lco2').textContent=v.et.toFixed(0)+' mmHg';$('lt').textContent=v.temp.toFixed(1)+' °C';
+ let risk=18,card=12,resp=16,oxy=8,met=10;
+ if(mode==='tachy'){risk=47;card=55;resp=20;oxy=10}
+ if(mode==='desat'){risk=52;oxy=64;resp=38;card=20}
+ if(mode==='resp'){risk=58;resp=68;card=38;oxy=24}
+ if(mode==='multi'){risk=78;card=70;resp=72;oxy=55;met=38}
+ $('risk').textContent=risk+'%';$('riskbar').style.width=risk+'%';$('riskbar').style.background=risk>65?'#ff415b':risk>35?'#ffe05a':'#35f28b';
+ $('cardRisk').textContent=card+'%';$('cardBar').style.width=card+'%';$('respRisk').textContent=resp+'%';$('respBar').style.width=resp+'%';$('oxyRisk').textContent=oxy+'%';$('oxyBar').style.width=oxy+'%';$('metRisk').textContent=met+'%';$('metBar').style.width=met+'%';
+ let high=risk>65; $('state').textContent=high?'ALERT':risk>35?'WATCH':'STABLE';$('state').style.color=high?'#ff415b':risk>35?'#ffe05a':'#35f28b';$('state').style.borderColor=$('state').style.color;
+ $('summary').textContent=mode==='normal'?'No significant abnormal physiological pattern detected.':mode==='multi'?'Multiple physiological variables changed simultaneously. AI correlation engine flagged a multivariate pattern for review.':'A simulated physiological change has been detected. Trend and cross-parameter analysis are elevated.';
+ $('confidence').textContent=(mode==='normal'?94:89)+'%';$('anom').textContent=(risk/100*.75).toFixed(2);
+ $('finding1').textContent=mode==='normal'?'Stable sinus rhythm':mode==='tachy'?'Sinus tachycardia pattern':'Physiological trend change detected';
+ $('finding1').className=mode==='normal'?'':'warn';$('ecgstate').textContent=mode==='normal'?'SINUS RHYTHM · NO MORPHOLOGICAL ALERT':'RHYTHM CHANGE · REVIEW FLAG';
+}
+function draw(){
+ const c=$('ecg'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);let w=r.width,h=r.height;
+ x.fillStyle='#02090e';x.fillRect(0,0,w,h);x.strokeStyle='#0c222c';x.lineWidth=1;
+ for(let i=0;i<w;i+=20){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke()}for(let j=0;j<h;j+=20){x.beginPath();x.moveTo(0,j);x.lineTo(w,j);x.stroke()}
+ x.strokeStyle='#35f28b';x.lineWidth=2;x.beginPath();
+ let hr=vals().hr,cycles=w/120*(hr/62);
+ for(let px=0;px<w;px++){let p=(px/120*cycles+phase*.12)%1,y=0;
+  if(p<.1)y=.10*Math.sin(p*18*Math.PI);else if(p<.17)y=0;else if(p<.195)y=-.14*(p-.17)/.025;else if(p<.215)y=.98*(1-(p-.195)/.02);else if(p<.245)y=-.52*(p-.215)/.03;else if(p<.42)y=.06*Math.sin((p-.245)*9*Math.PI);
+  y+=(Math.random()-.5)*.012;x.lineTo(px,h/2-y*h*.35);
+ }x.stroke();phase+=.04;requestAnimationFrame(draw);
+}
+setInterval(update,2000);update();draw();
+setInterval(()=>{$('clock').innerHTML=new Date().toLocaleString('hu-HU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'<br><span style="font-size:9px;color:#718b98">REAL-TIME SIMULATION</span>'},500);
+</script>
+</body>
+</html>

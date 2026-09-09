@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VITALIS — Virtual Patient Monitor</title>
+<style>
+:root{--bg:#030a10;--panel:#06121b;--border:#164052;--text:#e8f7ff;--muted:#7f9bab;--green:#39f28a;--cyan:#16c9ff;--yellow:#ffe45c;--pink:#ff55bb;--red:#ff4058}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -20%,#0d2635,#030a10 55%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+body{padding:10px}.app{max-width:1800px;margin:auto}.top{height:66px;border:1px solid var(--border);background:#06131ddd;display:flex;align-items:center;padding:7px 14px;border-radius:10px 10px 0 0;gap:20px}
+.logo{font-size:26px;font-weight:900;letter-spacing:2px;line-height:1}.logo small{display:block;font-size:10px;letter-spacing:1px;color:#75a1b5;margin-top:4px}.heart{font-size:38px;color:var(--cyan);filter:drop-shadow(0 0 8px #16c9ff88)}
+.patient{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px;flex:1}.info{font-size:13px;color:#cce1ea}.info b{color:white}.live{color:var(--green);font-weight:800;font-size:18px}.live i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 15px var(--green);margin-right:7px}
+.controls{display:flex;gap:7px}.btn{border:1px solid #274c60;background:#0a1c28;color:#b9d7e3;border-radius:6px;padding:9px 12px;font-size:12px}.btn.active{border-color:var(--cyan);box-shadow:0 0 10px #16c9ff55;color:white}
+.layout{display:grid;grid-template-columns:minmax(600px,2fr) minmax(450px,1fr);gap:8px;margin-top:8px}.left,.right{display:flex;flex-direction:column;gap:8px}.panel{background:linear-gradient(145deg,#06131c,#030b11);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 8px 30px #0007}.wavehead{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px;font-weight:800}.wave{width:100%;height:150px;display:block;background:#02090e}.green{color:var(--green)}.cyan{color:var(--cyan)}.yellow{color:var(--yellow)}.pink{color:var(--pink)}.red{color:var(--red)}
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vital{padding:10px 14px;min-height:112px}.vital .name{font-weight:800;font-size:13px}.big{font-size:48px;font-weight:900;line-height:1;margin:8px 0 2px}.unit{font-size:11px;color:var(--muted)}.side{font-size:12px;color:#a9c5d0}.side span{display:block;margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section{padding:10px}.section h3{margin:0 0 8px;font-size:12px;color:#83a8b9;letter-spacing:1px}.rows{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #102632;padding:7px 0;font-size:12px}.row b{color:white}
+.trends{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.trend{padding:7px;border:1px solid #123342;border-radius:6px}.trend canvas{width:100%;height:70px;display:block}.trend label{font-size:10px;color:#7894a2;display:flex;justify-content:space-between}.trend strong{font-size:15px}
+.bottom{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:8px}.badge{border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px}.badge b{display:block;font-size:16px;margin-top:4px}.footer{font-size:9px;color:#527180;text-align:center;padding:8px}
+.alarm{color:var(--green);font-weight:800}.signal{display:flex;gap:3px;align-items:end;height:18px}.signal i{width:4px;background:var(--cyan);display:block}.signal i:nth-child(1){height:6px}.signal i:nth-child(2){height:10px}.signal i:nth-child(3){height:15px}.signal i:nth-child(4){height:18px}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.bottom{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.patient{grid-template-columns:1fr 1fr}.top{height:auto;flex-wrap:wrap}.vitals,.two{grid-template-columns:1fr}.trends{grid-template-columns:1fr 1fr}.bottom{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="heart">ϟ</div>
+  <div class="logo">VirtuAI<small>INTELLIGENT PATIENT MONITORING</small></div>
+  <div class="patient">
+    <div class="info">👤 Patient: <b>Demo Patient</b><br>▣ ID: <b>DP-001</b></div>
+    <div class="info">Age: <b>32</b><br>Sex: <b>Male</b></div>
+    <div class="live"><i></i>LIVE<br><span style="font-size:10px;color:#7696a5">SIMULATED DATA</span></div>
+    <div class="info" id="clock"></div>
+  </div>
+  <div class="controls"><button class="btn active">2s</button><button class="btn">Trends</button><button class="btn">Alarms</button><button class="btn">⚙</button></div>
+</header>
+
+<div class="layout">
+<section class="left">
+  <div class="panel"><div class="wavehead green"><span>ECG II</span><span>25 mm/s &nbsp; 10 mm/mV &nbsp; Filter 0.5–40 Hz</span><span>Sinus Rhythm</span></div><canvas id="ecg" class="wave"></canvas></div>
+  <div class="panel"><div class="wavehead cyan"><span>Pleth (SpO₂)</span><span>SpO₂</span></div><canvas id="pleth" class="wave"></canvas></div>
+  <div class="panel"><div class="wavehead yellow"><span>RESP</span><span>Impedance</span></div><canvas id="resp" class="wave"></canvas></div>
+  <div class="panel"><div class="wavehead pink"><span>EtCO₂</span><span>mmHg</span></div><canvas id="co2" class="wave"></canvas></div>
+  <div class="panel"><div class="wavehead red"><span>IBP (Arterial)</span><span>mmHg</span></div><canvas id="ibp" class="wave"></canvas></div>
+</section>
+
+<section class="right">
+  <div class="vitals">
+    <div class="panel vital"><div class="name green">♥ HR</div><div class="big green" id="hr">62</div><div class="unit">BPM · Sinus rhythm</div></div>
+    <div class="panel vital"><div class="name cyan">SpO₂</div><div class="big cyan" id="spo2">98</div><div class="unit">% · Pulse oximetry</div></div>
+    <div class="panel vital"><div class="name yellow">♨ RR</div><div class="big yellow" id="rr">14</div><div class="unit">breaths/min</div></div>
+    <div class="panel vital"><div class="name pink">EtCO₂</div><div class="big pink" id="etco2">36</div><div class="unit">mmHg · Capnography</div></div>
+  </div>
+  <div class="panel section">
+    <h3>HEMODYNAMICS</h3><div class="rows">
+      <div class="row"><span>NIBP</span><b id="bp">118/76 mmHg</b></div><div class="row"><span>MAP</span><b id="map">90 mmHg</b></div>
+      <div class="row"><span>Pulse pressure</span><b id="pp">42 mmHg</b></div><div class="row"><span>Stroke volume</span><b id="sv">80 mL</b></div>
+      <div class="row"><span>Cardiac output</span><b id="co">5.0 L/min</b></div><div class="row"><span>Perfusion index</span><b id="pi">3.2%</b></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="panel section"><h3>ECG INTERVALS</h3>
+      <div class="row"><span>PR</span><b id="pr">158 ms</b></div><div class="row"><span>QRS</span><b id="qrs">88 ms</b></div><div class="row"><span>QT</span><b id="qt">392 ms</b></div><div class="row"><span>QTc</span><b id="qtc">400 ms</b></div>
+    </div>
+    <div class="panel section"><h3>RESPIRATORY</h3>
+      <div class="row"><span>EtCO₂</span><b id="etco2b">36 mmHg</b></div><div class="row"><span>EtO₂</span><b id="eto2">95 mmHg</b></div><div class="row"><span>Tidal volume</span><b id="tv">500 mL</b></div><div class="row"><span>Minute ventilation</span><b id="mv">7.0 L/min</b></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="panel section"><h3>LABORATORY</h3>
+      <div class="row"><span>Glucose</span><b id="glu">88 mg/dL</b></div><div class="row"><span>Lactate</span><b id="lac">1.04 mmol/L</b></div><div class="row"><span>Hemoglobin</span><b>15.2 g/dL</b></div><div class="row"><span>Hematocrit</span><b>45.0%</b></div>
+    </div>
+    <div class="panel section"><h3>ELECTROLYTES</h3>
+      <div class="row"><span>Na⁺</span><b>140 mmol/L</b></div><div class="row"><span>K⁺</span><b>4.2 mmol/L</b></div><div class="row"><span>Ca²⁺</span><b>2.32 mmol/L</b></div><div class="row"><span>Mg²⁺</span><b>0.84 mmol/L</b></div>
+    </div>
+  </div>
+  <div class="panel section"><h3>TEMPERATURE & OXYGENATION</h3><div class="rows">
+    <div class="row"><span>Core temperature</span><b id="temp">36.7 °C</b></div><div class="row"><span>Skin temperature</span><b>36.5 °C</b></div>
+    <div class="row"><span>SpO₂</span><b id="spo2b">98%</b></div><div class="row"><span>FiO₂</span><b>21%</b></div>
+  </div></div>
+  <div class="panel section"><h3>ALARM STATUS</h3><div class="alarm">● NO ACTIVE CRITICAL ALARMS <span style="float:right">SIGNAL <span class="signal"><i></i><i></i><i></i><i></i></span></span></div></div>
+</section>
+</div>
+
+<div class="panel section" style="margin-top:8px"><h3>TRENDS · LIVE SIMULATION</h3>
+<div class="trends">
+  <div class="trend"><label>Heart Rate <strong class="green" id="th">62</strong></label><canvas id="thc"></canvas></div>
+  <div class="trend"><label>SpO₂ <strong class="cyan" id="ts">98</strong></label><canvas id="tsc"></canvas></div>
+  <div class="trend"><label>NIBP Sys <strong class="red" id="tb">118</strong></label><canvas id="tbc"></canvas></div>
+  <div class="trend"><label>Temperature <strong id="tt">36.7</strong></label><canvas id="ttc"></canvas></div>
+  <div class="trend"><label>EtCO₂ <strong class="pink" id="tc">36</strong></label><canvas id="tcc"></canvas></div>
+  <div class="trend"><label>Respiratory Rate <strong class="yellow" id="tr">14</strong></label><canvas id="trc"></canvas></div>
+</div></div>
+<div class="bottom">
+ <div class="badge"><span>System</span><b class="alarm">ONLINE</b></div><div class="badge"><span>Data source</span><b>SIMULATED</b></div><div class="badge"><span>Sampling</span><b>2 seconds</b></div><div class="badge"><span>Patient state</span><b class="alarm">STABLE</b></div><div class="badge"><span>ECG signal</span><b>GOOD</b></div><div class="badge"><span>Monitor</span><b>VITALIS v1.0</b></div>
+</div>
+<div class="footer">SYNTHETIC DATA ONLY · EDUCATIONAL / DEVELOPMENT DEMO · NOT A MEDICAL DEVICE · NOT FOR CLINICAL DECISION MAKING</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let phase=0, beatPhase=0;
+const histories={hr:[],spo2:[],bp:[],temp:[],co2:[],rr:[]};
+function resize(c){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return [x,r.width,r.height]}
+function grid(x,w,h){x.fillStyle='#02090e';x.fillRect(0,0,w,h);x.strokeStyle='#0c222c';x.lineWidth=1;for(let i=0;i<w;i+=20){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke()}for(let j=0;j<h;j+=20){x.beginPath();x.moveTo(0,j);x.lineTo(w,j);x.stroke()}}
+function ecgValue(p){ // stylized ECG morphology
+  p=p%1; let y=0;
+  if(p<.10)y=.10*Math.sin(p*18*Math.PI);
+  else if(p<.17)y=0;
+  else if(p<.195)y=-.14*(p-.17)/.025;
+  else if(p<.215)y=.98*(1-(p-.195)/.02);
+  else if(p<.245)y=-.52*(p-.215)/.03;
+  else if(p<.42)y=.06*Math.sin((p-.245)*9*Math.PI);
+  return y;
+}
+function drawWave(id,type,amp,cycles,color){
+ const c=$(id),[x,w,h]=resize(c);grid(x,w,h);x.strokeStyle=color;x.lineWidth=2;x.shadowBlur=5;x.shadowColor=color;x.beginPath();
+ for(let px=0;px<w;px++){let q=px/w*cycles+phase*.55, y;
+   if(type==='ecg')y=ecgValue(q);
+   if(type==='pleth'){let p=q%1;y=(Math.exp(-3*p)*.9+.14*Math.exp(-20*Math.pow(p-.32,2)))-.28}
+   if(type==='resp')y=.48*Math.sin(q*Math.PI*2);
+   if(type==='co2'){let p=q%1;y=p<.12?0.45*p/.12:p<.72?.45:.45-(p-.72)*.45/.18}
+   if(type==='ibp'){let p=q%1;y=.05+(p<.08?1.0*Math.sin(p*Math.PI/.08):.22*Math.exp(-(p-.08)*10))}
+   x.lineTo(px,w? h/2-y*amp*h:0)
+ }x.stroke();x.shadowBlur=0;
+}
+function trend(id,arr,color){const c=$(id),[x,w,h]=resize(c);x.fillStyle='#030b10';x.fillRect(0,0,w,h);x.strokeStyle='#12303b';x.lineWidth=1;for(let i=0;i<w;i+=25){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke()}x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();let min=Math.min(...arr),max=Math.max(...arr),range=Math.max(max-min,.1);arr.forEach((v,i)=>{let xx=i/(arr.length-1)*w,yy=h-5-(v-min)/range*(h-10);i?x.lineTo(xx,yy):x.moveTo(xx,yy)});x.stroke()}
+function update(){
+ phase+=.035;
+ const hr=62+1.7*Math.sin(phase*.7)+(Math.random()-.5)*1.2, spo=98+.15*Math.sin(phase*.3)+(Math.random()-.5)*.08, rr=14+.35*Math.sin(phase*.4)+(Math.random()-.5)*.2;
+ const sbp=118+2.2*Math.sin(phase*.25)+(Math.random()-.5)*1.5,dbp=76+1.1*Math.sin(phase*.28)+(Math.random()-.5)*.9,map=dbp+(sbp-dbp)/3;
+ const sv=80+1.4*Math.sin(phase*.35)+(Math.random()-.5),co=hr*sv/1000,et=36+.8*Math.sin(phase*.3)+(Math.random()-.5)*.5,temp=36.7+.02*Math.sin(phase*.15)+(Math.random()-.5)*.01;
+ $('hr').textContent=hr.toFixed(0);$('spo2').textContent=spo.toFixed(0);$('rr').textContent=rr.toFixed(0);$('etco2').textContent=et.toFixed(0);$('etco2b').textContent=et.toFixed(0)+' mmHg';
+ $('bp').textContent=`${sbp.toFixed(0)}/${dbp.toFixed(0)} mmHg`;$('map').textContent=map.toFixed(0)+' mmHg';$('pp').textContent=(sbp-dbp).toFixed(0)+' mmHg';$('sv').textContent=sv.toFixed(0)+' mL';$('co').textContent=co.toFixed(1)+' L/min';$('pi').textContent=(3.2+.15*Math.sin(phase)).toFixed(1)+'%';
+ $('temp').textContent=temp.toFixed(1)+' °C';$('spo2b').textContent=spo.toFixed(0)+'%';$('glu').textContent=(88+.8*Math.sin(phase*.2)).toFixed(1)+' mg/dL';$('lac').textContent=(1.04+.02*Math.sin(phase*.2)).toFixed(2)+' mmol/L';
+ histories.hr.push(hr);histories.spo2.push(spo);histories.bp.push(sbp);histories.temp.push(temp);histories.co2.push(et);histories.rr.push(rr);Object.values(histories).forEach(a=>{while(a.length>120)a.shift()});
+ $('th').textContent=hr.toFixed(0);$('ts').textContent=spo.toFixed(0);$('tb').textContent=sbp.toFixed(0);$('tt').textContent=temp.toFixed(1);$('tc').textContent=et.toFixed(0);$('tr').textContent=rr.toFixed(0);
+ trend('thc',histories.hr,'#39f28a');trend('tsc',histories.spo2,'#16c9ff');trend('tbc',histories.bp,'#ff4058');trend('ttc',histories.temp,'#ffe45c');trend('tcc',histories.co2,'#ff55bb');trend('trc',histories.rr,'#ffe45c');
+}
+function animate(){drawWave('ecg','ecg',.8,6,'#39f28a');drawWave('pleth','pleth',.72,6,'#16c9ff');drawWave('resp','resp',.7,5,'#ffe45c');drawWave('co2','co2',.8,5,'#ff55bb');drawWave('ibp','ibp',.72,6,'#ff4058');requestAnimationFrame(animate)}
+setInterval(update,2000);update();animate();
+setInterval(()=>{$('clock').innerHTML=new Date().toLocaleString('hu-HU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'<br><span style="font-size:10px;color:#7696a5">2 s SAMPLE INTERVAL</span>'},500);
+addEventListener('resize',()=>{histories.hr.length&&update()});
+</script>
+</body>
+</html>
