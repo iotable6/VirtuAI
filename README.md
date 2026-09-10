@@ -69,6 +69,9 @@ The monitoring interface provides a modern ICU-style visualization of multiple p
 - Physiological trends
 - Real-time waveform visualization
 
+
+<img src="https://github.com/iotable6/VirtuAI/blob/main/AI_Monitor_1.png" />
+
 ---
 
 ## 🤖 AI Analysis Engine
@@ -107,3 +110,5 @@ Patient Data
 │ Patterns • Trends   │
 │ Explainable Results │
 └─────────────────────┘
+
+
