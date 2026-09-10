@@ -74,6 +74,9 @@ The monitoring interface provides a modern ICU-style visualization of multiple p
 
 ---
 
+https://github.com/iotable6/VirtuAI/blob/e5d30da95e969e30b763401cf5eef3b88b2993f7/patient_monitor_ai_1.png
+
+
 ## 🤖 AI Analysis Engine
 
 VirtuAI is designed to analyze relationships between physiological parameters instead of evaluating individual values independently.
