@@ -77,6 +77,7 @@ The monitoring interface provides a modern ICU-style visualization of multiple p
 
   <img src="https://github.com/iotable6/VirtuAI/blob/e5d30da95e969e30b763401cf5eef3b88b2993f7/patient_monitor_ai_1.png" />
     <img src="https://github.com/iotable6/VirtuAI/blob/e5d30da95e969e30b763401cf5eef3b88b2993f7/patient_monitor_ai_2.png" />
+      <img src="https://github.com/iotable6/VirtuAI/blob/e5d30da95e969e30b763401cf5eef3b88b2993f7/patient_monitor_ai_3.png" />
   
 
 
